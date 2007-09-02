@@ -1,5 +1,5 @@
 %define name 	jack-rack
-%define version 1.4.5
+%define version 1.4.6
 %define release %mkrel 1
 
 Name: 		%{name}
@@ -8,6 +8,7 @@ Version: 	%{version}
 Release: 	%{release}
 
 Source:		http://prdownloads.sourceforge.net/jack-rack/%{name}-%{version}.tar.bz2
+Patch:          jack-rack-undeprec.dif
 URL:		http://jack-rack.sourceforge.net/
 License:	GPL
 Group:		Sound
@@ -15,6 +16,7 @@ BuildRoot:	%{_tmppath}/%{name}-buildroot
 BuildRequires:	ladspa-devel pkgconfig jackit-devel
 BuildRequires:	gtk2-devel libgnomeui2-devel ImageMagick
 BuildRequires:	chrpath desktop-file-utils
+BuildRequires:	ecasound-devel
 
 %description
 JACK Rack is an effects "rack" for the JACK low latency audio API. The rack
@@ -23,6 +25,7 @@ into an effects box.
 
 %prep
 %setup -q
+%patch
 
 %build
 %configure2_5x
@@ -34,16 +37,11 @@ rm -rf $RPM_BUILD_ROOT
 chrpath -d %buildroot/%_bindir/%name
 
 #menu
-mkdir -p $RPM_BUILD_ROOT%{_menudir}
-cat << EOF > $RPM_BUILD_ROOT%{_menudir}/%{name}
-?package(%{name}): command="%{name}" icon="%{name}.png" needs="x11" title="JACK-Rack" longtitle="Effect rack" section="Multimedia/Sound" xdg="true"
-EOF
 
 desktop-file-install --vendor="" \
   --remove-category="Application" \
   --add-category="GTK" \
   --add-category="AudioVideo;Sequencer" \
-  --add-category="X-MandrivaLinux-Multimedia-Sound" \
   --dir $RPM_BUILD_ROOT%{_datadir}/applications $RPM_BUILD_ROOT%{_datadir}/applications/*
 
 #icons
@@ -69,13 +67,14 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %doc README AUTHORS BUGS COPYING ChangeLog NEWS TODO
 %{_bindir}/%name
+%{_bindir}/ecarack
 %{_datadir}/%name
 %{_datadir}/applications/%name.desktop
 %{_datadir}/pixmaps/*.png
 %{_datadir}/dtds
-%{_menudir}/%name
 %{_liconsdir}/%name.png
 %{_iconsdir}/%name.png
 %{_miconsdir}/%name.png
+
 
 
