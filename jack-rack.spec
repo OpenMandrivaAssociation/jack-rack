@@ -16,7 +16,7 @@ BuildRoot:	%{_tmppath}/%{name}-buildroot
 BuildRequires:	ladspa-devel pkgconfig jackit-devel
 BuildRequires:	gtk2-devel libgnomeui2-devel ImageMagick
 BuildRequires:	chrpath desktop-file-utils
-BuildRequires:	ecasound-devel
+BuildRequires:	ecasound-devel ladcca-devel imagemagick
 
 %description
 JACK Rack is an effects "rack" for the JACK low latency audio API. The rack
