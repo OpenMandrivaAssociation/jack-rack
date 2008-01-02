@@ -1,5 +1,5 @@
 %define name 	jack-rack
-%define version 1.4.6
+%define version 1.4.7
 %define release %mkrel 1
 
 Name: 		%{name}
