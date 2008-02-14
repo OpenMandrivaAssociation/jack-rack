@@ -12,6 +12,7 @@ Patch:          jack-rack-undeprec.dif
 URL:		http://jack-rack.sourceforge.net/
 License:	GPL
 Group:		Sound
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires:	ladspa-devel pkgconfig jackit-devel
 BuildRequires:	gtk2-devel libgnomeui2-devel ImageMagick
 BuildRequires:	chrpath desktop-file-utils
