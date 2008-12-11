@@ -14,7 +14,7 @@ License:	GPL
 Group:		Sound
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires:	ladspa-devel pkgconfig jackit-devel
-BuildRequires:	gtk2-devel libgnomeui2-devel ImageMagick
+BuildRequires:	gtk2-devel libgnomeui2-devel imagemagick
 BuildRequires:	chrpath desktop-file-utils
 BuildRequires:	ecasound-devel ladcca-devel
 
