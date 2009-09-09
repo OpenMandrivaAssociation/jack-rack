@@ -1,6 +1,6 @@
 %define name 	jack-rack
 %define version 1.4.7
-%define release %mkrel 3
+%define release %mkrel 4
 
 Name: 		%{name}
 Summary: 	LADSPA effects rack for JACK
