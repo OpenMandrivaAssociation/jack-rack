@@ -1,6 +1,6 @@
 %define name 	jack-rack
 %define version 1.4.7
-%define release %mkrel 4
+%define release %mkrel 5
 
 Name: 		%{name}
 Summary: 	LADSPA effects rack for JACK
@@ -8,15 +8,16 @@ Version: 	%{version}
 Release: 	%{release}
 
 Source:		http://prdownloads.sourceforge.net/jack-rack/%{name}-%{version}.tar.bz2
-Patch:          jack-rack-undeprec.dif
+Patch0:         jack-rack-1.4.7-undeprec.patch
 URL:		http://jack-rack.sourceforge.net/
-License:	GPL
+License:	GPLv2+
 Group:		Sound
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires:	ladspa-devel pkgconfig jackit-devel
 BuildRequires:	gtk2-devel libgnomeui2-devel imagemagick
 BuildRequires:	chrpath desktop-file-utils
 BuildRequires:	ecasound-devel ladcca-devel
+BuildRequires:	lash-devel
 
 %description
 JACK Rack is an effects "rack" for the JACK low latency audio API. The rack
@@ -25,10 +26,11 @@ into an effects box.
 
 %prep
 %setup -q
-%patch
+%patch0 -p1
 
 %build
-%configure2_5x
+autoreconf -f -i
+%configure --enable-lash
 %make
 										
 %install
