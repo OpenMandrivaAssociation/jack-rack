@@ -18,6 +18,7 @@ BuildRequires:	gtk2-devel libgnomeui2-devel imagemagick
 BuildRequires:	chrpath desktop-file-utils
 BuildRequires:	ecasound-devel ladcca-devel
 BuildRequires:	lash-devel
+BuildRequires:	gettext-devel
 
 %description
 JACK Rack is an effects "rack" for the JACK low latency audio API. The rack
