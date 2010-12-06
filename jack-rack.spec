@@ -1,6 +1,6 @@
 %define name 	jack-rack
 %define version 1.4.7
-%define release %mkrel 6
+%define release %mkrel 7
 
 Name: 		%{name}
 Summary: 	LADSPA effects rack for JACK
@@ -16,7 +16,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires:	ladspa-devel pkgconfig jackit-devel
 BuildRequires:	gtk2-devel libgnomeui2-devel imagemagick
 BuildRequires:	chrpath desktop-file-utils
-BuildRequires:	ecasound-devel ladcca-devel
+BuildRequires:	ecasound-devel
 BuildRequires:	lash-devel
 BuildRequires:	gettext-devel
 
