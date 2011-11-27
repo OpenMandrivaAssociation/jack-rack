@@ -50,6 +50,7 @@ desktop-file-install --vendor="" \
   --remove-category="Application" \
   --add-category="GTK" \
   --add-category="AudioVideo;Audio;Sequencer" \
+  --add-category="X-MandrivaLinux-Sound" \
   --dir $RPM_BUILD_ROOT%{_datadir}/applications $RPM_BUILD_ROOT%{_datadir}/applications/*
 
 #icons
@@ -60,7 +61,7 @@ convert -size 32x32 pixmaps/jack-rack-icon.png $RPM_BUILD_ROOT/%_iconsdir/%name.
 mkdir -p $RPM_BUILD_ROOT/%_miconsdir
 convert -size 16x16 pixmaps/jack-rack-icon.png $RPM_BUILD_ROOT/%_miconsdir/%name.png
 
-%find_lang %name
+%find_lang %name --with-gnome --all-name
 
 %clean
 rm -rf $RPM_BUILD_ROOT
