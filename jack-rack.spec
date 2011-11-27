@@ -1,24 +1,24 @@
-%define name 	jack-rack
+%define name    jack-rack
 %define version 1.4.7
-%define release %mkrel 7
+%define release 8
 
-Name: 		%{name}
-Summary: 	LADSPA effects rack for JACK
-Version: 	%{version}
-Release: 	%{release}
+Name:           %{name}
+Summary:        LADSPA effects rack for JACK
+Version:        %{version}
+Release:        %{release}
 
-Source:		http://prdownloads.sourceforge.net/jack-rack/%{name}-%{version}.tar.bz2
+Source:         http://prdownloads.sourceforge.net/jack-rack/%{name}-%{version}.tar.bz2
 Patch0:         jack-rack-1.4.7-undeprec.patch
-URL:		http://jack-rack.sourceforge.net/
-License:	GPLv2+
-Group:		Sound
+URL:            http://jack-rack.sourceforge.net/
+License:        GPLv2+
+Group:          Sound
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-BuildRequires:	ladspa-devel pkgconfig jackit-devel
-BuildRequires:	gtk2-devel libgnomeui2-devel imagemagick
-BuildRequires:	chrpath desktop-file-utils
-BuildRequires:	ecasound-devel
-BuildRequires:	lash-devel
-BuildRequires:	gettext-devel
+BuildRequires:  ladspa-devel pkgconfig jackit-devel
+BuildRequires:  gtk2-devel libgnomeui2-devel imagemagick
+BuildRequires:  chrpath desktop-file-utils
+BuildRequires:  ecasound-devel
+# BuildRequires:  lash-devel
+BuildRequires:  gettext-devel
 
 %description
 JACK Rack is an effects "rack" for the JACK low latency audio API. The rack
@@ -30,10 +30,13 @@ into an effects box.
 %patch0 -p1
 
 %build
+# Fix explicit lm and ldl linking requirement
+perl -pi -e 's/jack_rack_LDFLAGS =/jack_rack_LDFLAGS = -ldl -lm/g' src/Makefile.am
+
 autoreconf -f -i
-%configure --enable-lash
+%configure
 %make
-										
+
 %install
 rm -rf $RPM_BUILD_ROOT
 %makeinstall_std
@@ -61,16 +64,6 @@ convert -size 16x16 pixmaps/jack-rack-icon.png $RPM_BUILD_ROOT/%_miconsdir/%name
 
 %clean
 rm -rf $RPM_BUILD_ROOT
-
-%if %mdkversion < 200900
-%post
-%update_menus
-%endif
-		
-%if %mdkversion < 200900
-%postun
-%clean_menus
-%endif
 
 %files -f %{name}.lang
 %defattr(-,root,root)
