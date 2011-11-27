@@ -61,12 +61,13 @@ convert -size 32x32 pixmaps/jack-rack-icon.png $RPM_BUILD_ROOT/%_iconsdir/%name.
 mkdir -p $RPM_BUILD_ROOT/%_miconsdir
 convert -size 16x16 pixmaps/jack-rack-icon.png $RPM_BUILD_ROOT/%_miconsdir/%name.png
 
-%find_lang %name --with-gnome --all-name
+# %find_lang %name
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%files -f %{name}.lang
+%files
+# %files -f %{name}.lang
 %defattr(-,root,root)
 %doc README AUTHORS BUGS COPYING ChangeLog NEWS TODO
 %{_bindir}/%name
@@ -78,6 +79,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_liconsdir}/%name.png
 %{_iconsdir}/%name.png
 %{_miconsdir}/%name.png
-
+%{_localedir}/fr/LC_MESSAGES/%name.mo
+%{_localedir}/de/LC_MESSAGES/%name.mo
+%{_localedir}/ru/LC_MESSAGES/%name.mo
 
 
