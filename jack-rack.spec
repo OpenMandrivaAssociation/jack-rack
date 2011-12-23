@@ -9,6 +9,7 @@ Release:        %{release}
 
 Source:         http://prdownloads.sourceforge.net/jack-rack/%{name}-%{version}.tar.bz2
 Patch0:         jack-rack-1.4.7-undeprec.patch
+Patch1:         jack-rack-1.4.7-jacksession.patch
 URL:            http://jack-rack.sourceforge.net/
 License:        GPLv2+
 Group:          Sound
@@ -29,13 +30,13 @@ into an effects box.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 
 %build
 # Fix explicit lm and ldl linking requirement
-perl -pi -e 's/jack_rack_LDFLAGS =/jack_rack_LDFLAGS = -ldl -lm/g' src/Makefile.am
-./autogen.sh
-perl -pi -e 's/\@datadir/\@datarootdir/g' po/Makefile.in.in
+%define _disable_ld_as_needed   1
 %configure
+perl -pi -e 's/LDFLAGS =/LDFLAGS = -ldl -lm -lpthread /g' Makefile src/Makefile
 %make
 
 %install
