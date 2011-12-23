@@ -14,11 +14,11 @@ License:        GPLv2+
 Group:          Sound
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires:  ladspa-devel pkgconfig jackit-devel
-BuildRequires:  gtk2-devel libgnomeui2-devel imagemagick
+BuildRequires:  gtk2-devel imagemagick
 BuildRequires:  chrpath desktop-file-utils
 BuildRequires:  ecasound-devel
 # BuildRequires:  lash-devel
-BuildRequires:  gettext-devel
+BuildRequires:  liblrdf-devel
 
 %description
 JACK Rack is an effects "rack" for the JACK low latency audio API. The rack
@@ -32,8 +32,8 @@ into an effects box.
 %build
 # Fix explicit lm and ldl linking requirement
 perl -pi -e 's/jack_rack_LDFLAGS =/jack_rack_LDFLAGS = -ldl -lm/g' src/Makefile.am
-
-autoreconf -f -i
+./autogen.sh
+perl -pi -e 's/\@datadir/\@datarootdir/g' po/Makefile.in.in
 %configure
 %make
 
@@ -61,13 +61,12 @@ convert -size 32x32 pixmaps/jack-rack-icon.png $RPM_BUILD_ROOT/%_iconsdir/%name.
 mkdir -p $RPM_BUILD_ROOT/%_miconsdir
 convert -size 16x16 pixmaps/jack-rack-icon.png $RPM_BUILD_ROOT/%_miconsdir/%name.png
 
-# %find_lang %name
+%find_lang %name %{name}.lang
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%files
-# %files -f %{name}.lang
+%files -f %{name}.lang
 %defattr(-,root,root)
 %doc README AUTHORS BUGS COPYING ChangeLog NEWS TODO
 %{_bindir}/%name
@@ -79,8 +78,4 @@ rm -rf $RPM_BUILD_ROOT
 %{_liconsdir}/%name.png
 %{_iconsdir}/%name.png
 %{_miconsdir}/%name.png
-%{_localedir}/fr/LC_MESSAGES/%name.mo
-%{_localedir}/de/LC_MESSAGES/%name.mo
-%{_localedir}/ru/LC_MESSAGES/%name.mo
-
 
