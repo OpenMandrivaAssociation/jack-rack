@@ -1,7 +1,7 @@
 Name:           jack-rack
 Summary:        LADSPA effects rack for JACK
 Version:        1.4.7
-Release:        9
+Release:        10
 
 Source:         http://prdownloads.sourceforge.net/jack-rack/%{name}-%{version}.tar.bz2
 Patch0:         jack-rack-1.4.7-undeprec.patch
@@ -15,6 +15,7 @@ BuildRequires:  gtk2-devel imagemagick
 BuildRequires:  chrpath desktop-file-utils
 BuildRequires:  ecasound-devel
 BuildRequires:  liblrdf-devel
+BuildRequires:  raptor-devel
 BuildRequires:  gettext-devel
 
 %description
