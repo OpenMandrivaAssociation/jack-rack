@@ -1,11 +1,7 @@
-%define name    jack-rack
-%define version 1.4.7
-%define release 8
-
-Name:           %{name}
+Name:           jack-rack
 Summary:        LADSPA effects rack for JACK
-Version:        %{version}
-Release:        %{release}
+Version:        1.4.7
+Release:        9
 
 Source:         http://prdownloads.sourceforge.net/jack-rack/%{name}-%{version}.tar.bz2
 Patch0:         jack-rack-1.4.7-undeprec.patch
@@ -13,12 +9,11 @@ Patch1:         jack-rack-1.4.7-jacksession.patch
 URL:            http://jack-rack.sourceforge.net/
 License:        GPLv2+
 Group:          Sound
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
+
 BuildRequires:  ladspa-devel pkgconfig jackit-devel
 BuildRequires:  gtk2-devel imagemagick
 BuildRequires:  chrpath desktop-file-utils
 BuildRequires:  ecasound-devel
-# BuildRequires:  lash-devel
 BuildRequires:  liblrdf-devel
 BuildRequires:  gettext-devel
 
@@ -64,9 +59,6 @@ mkdir -p $RPM_BUILD_ROOT/%_miconsdir
 convert -size 16x16 pixmaps/jack-rack-icon.png $RPM_BUILD_ROOT/%_miconsdir/%name.png
 
 %find_lang %name %{name}.lang
-
-%clean
-rm -rf $RPM_BUILD_ROOT
 
 %files -f %{name}.lang
 %defattr(-,root,root)
