@@ -1,0 +1,277 @@
+diff --git a/configure.ac b/configure.ac
+index 67f8a3a..de7ad9c 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -18,6 +19,11 @@ AC_DEFINE_UNQUOTED(JACK_VERSION, "$JACK_VERSION", [The version of jack we're com
+ AC_SUBST(JACK_CFLAGS)
+ AC_SUBST(JACK_LIBS)
+ 
++AC_CHECK_HEADER(jack/session.h, JACK_SESSION_FOUND="yes", JACK_SESSION_FOUND="no")
++if test "$JACK_SESSION_FOUND" = "yes"; then
++	AC_DEFINE(HAVE_JACK_SESSION, 1, [whether jack/session.h is available])
++fi
++
+ 
+ ##############
+ ### LADSPA ###
+@@ -64,8 +70,8 @@ AM_CONDITIONAL(HAVE_ALSA, test "$ALSA_FOUND" = "yes")
+ ##############
+ ### GTK+ 2 ###
+ ##############
+-PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.0.0, true,
+-                  AC_MSG_ERROR([you need gtk+ >= 2.0.0  see http://www.gtk.org/]))
++PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.12.0, true,
++                  AC_MSG_ERROR([you need gtk+ >= 2.12.0  see http://www.gtk.org/]))
+ AC_SUBST(GTK_CFLAGS)
+ AC_SUBST(GTK_LIBS)
+ 
+@@ -234,6 +240,7 @@ AC_MSG_RESULT([
+   LRDF support:            $LRDF_FOUND
+   LASH support:            $LASH_FOUND
+   GNOME 2 support:         $GNOME_FOUND
++  JACK Session support:    $JACK_SESSION_FOUND
+   
+   Installation prefix:     $prefix
+ 
+diff --git a/src/globals.h b/src/globals.h
+index 01869ae..2bd5539 100644
+--- a/src/globals.h
++++ b/src/globals.h
+@@ -61,6 +61,7 @@ extern gboolean   connect_inputs;
+ extern gboolean   connect_outputs;
+ extern gboolean   time_runs;
+ extern GString    *client_name;
++extern GString    *session_uuid;
+ extern GString    *initial_filename;
+ 
+ typedef enum MIDI_CONTROL_TYPE 
+diff --git a/src/main.c b/src/main.c
+index f14af8b..91aa890 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -51,6 +51,7 @@ gboolean connect_inputs = FALSE;
+ gboolean connect_outputs = FALSE;
+ gboolean time_runs = TRUE;
+ GString  *client_name = NULL;
++GString  *session_uuid = NULL;
+ GString  *initial_filename = NULL;
+ 
+ #ifdef HAVE_LASH
+@@ -117,6 +118,7 @@ int main (int argc, char ** argv) {
+     { "input", 1, NULL, 'i' },
+     { "output", 1, NULL, 'o' },
+     { "no-time", 0, NULL, 't' },
++    { "jack-session-uuid", 1, NULL, 'U' },
+     { 0, 0, 0, 0 }
+   };
+ 
+@@ -157,7 +159,8 @@ int main (int argc, char ** argv) {
+ 
+   /* set the client name */
+   client_name = g_string_new ("");
+-  g_string_printf (client_name, "%s (%d)", CLIENT_NAME_BASE, getpid());
++  session_uuid = g_string_new ("");
++  g_string_printf (client_name, "%s", CLIENT_NAME_BASE);
+   
+   while ((opt = getopt_long (argc, argv, options, long_options, NULL)) != -1) {
+     switch (opt) {
+@@ -200,6 +203,10 @@ int main (int argc, char ** argv) {
+         time_runs = FALSE;
+         break;
+ 
++      case 'U':
++        g_string_printf (session_uuid, "%s", optarg);
++	break;
++
+       case ':':
+       case '?':
+         print_help ();
+diff --git a/src/midi_control.c b/src/midi_control.c
+index 53cdf7e..acb5d6b 100644
+--- a/src/midi_control.c
++++ b/src/midi_control.c
+@@ -125,6 +125,9 @@ wet_dry_midi_control_new (struct _plugin_slot * plugin_slot, unsigned long chann
+   
+   midi_ctrl->min = 0.0;
+   midi_ctrl->max = 1.0;
++
++  midi_ctrl->real_min = midi_ctrl->min;
++  midi_ctrl->real_max = midi_ctrl->max;
+   
+   return midi_ctrl;
+ }
+@@ -140,6 +143,9 @@ toggle_midi_control_new (struct _plugin_slot * plugin_slot)
+    
+   midi_ctrl->min = 0.0;
+   midi_ctrl->max = 1.0;
++
++  midi_ctrl->real_min = midi_ctrl->min;
++  midi_ctrl->real_max = midi_ctrl->max;
+   
+   return midi_ctrl;
+ }
+diff --git a/src/plugin_slot.c b/src/plugin_slot.c
+index 218ccd9..7ce4bc1 100644
+--- a/src/plugin_slot.c
++++ b/src/plugin_slot.c
+@@ -558,6 +558,10 @@ plugin_slot_change_plugin (plugin_slot_t * plugin_slot, plugin_t * plugin)
+     }
+ 
+ 
++#ifdef HAVE_ALSA
++  /* remove controls for this plugin */
++  plugin_slot_remove_midi_controls (plugin_slot);
++#endif
+ 
+   /* kill all the control stuff */
+   if (plugin_slot->control_table)
+diff --git a/src/process.c b/src/process.c
+index 1267850..05dc09e 100644
+--- a/src/process.c
++++ b/src/process.c
+@@ -19,6 +19,11 @@
+  */
+ 
+ #include <jack/jack.h>
++
++#if HAVE_JACK_SESSION
++#include <jack/session.h>
++#endif
++
+ #include <glib.h>
+ #include <stdio.h>
+ #include <string.h>
+@@ -453,13 +458,25 @@ process_info_connect_jack (process_info_t * procinfo, ui_t * ui)
+ {
+   _update_status ( _("Connecting to JACK server with client name '%s'"), jack_client_name );
+ 
+-  if (!(procinfo->jack_client = jack_client_new (jack_client_name)))
++#if HAVE_JACK_SESSION
++  if (strlen (session_uuid->str))
++    procinfo->jack_client = jack_client_open (jack_client_name, JackSessionID, NULL, session_uuid->str);
++  else
++#endif
++    procinfo->jack_client = jack_client_open (jack_client_name, JackNullOption, NULL);
++
++  if (!procinfo->jack_client)
+         return -1;
+   
+   _update_status ( _status_cb_data, _("Connected to JACK server") );
+ 
+   jack_set_process_callback (procinfo->jack_client, process, procinfo);
+   jack_on_shutdown (procinfo->jack_client, jack_shutdown_cb, ui); /* FIXME: need a generic callback for this, too */
++
++#if HAVE_JACK_SESSION
++  if( jack_set_session_callback )
++	  jack_set_session_callback (procinfo->jack_client, jack_session_cb_aux, ui);
++#endif
+                                             
+   return 0;
+ }
+@@ -638,6 +655,10 @@ process_info_new (ui_t* ui, unsigned long rack_channels)
+   
+   jack_set_process_callback (procinfo->jack_client, process, procinfo);
+   jack_on_shutdown (procinfo->jack_client, jack_shutdown_cb, ui);
++#if HAVE_JACK_SESSION
++  if( jack_set_session_callback )
++	  jack_set_session_callback (procinfo->jack_client, jack_session_cb_aux, ui);
++#endif
+   
+   procinfo->ui_to_process = ui->ui_to_process; 
+   procinfo->process_to_ui = ui->process_to_ui; 
+diff --git a/src/ui.h b/src/ui.h
+index 9d7994f..e982485 100644
+--- a/src/ui.h
++++ b/src/ui.h
+@@ -25,6 +25,11 @@
+ 
+ #include <gtk/gtk.h>
+ 
++#include <jack/jack.h>
++#ifdef HAVE_JACK_SESSION
++#include <jack/session.h>
++#endif
++
+ #include "jack_rack.h"
+ #include "plugin_mgr.h"
+ #include "midi.h"
+@@ -98,6 +103,9 @@ struct _ui
+   GtkWidget         *midi_menu;
+   GtkWidget         *midi_menu_item;
+ #endif
++#ifdef HAVE_JACK_SESSION
++  jack_session_event_t *js_event;
++#endif
+ };
+ 
+ ui_t * ui_new     (unsigned long channels);
+diff --git a/src/ui_callbacks.c b/src/ui_callbacks.c
+index 6134a91..2250613 100644
+--- a/src/ui_callbacks.c
++++ b/src/ui_callbacks.c
+@@ -655,3 +655,40 @@ jack_shutdown_cb (void * data)
+   ui->shutdown = TRUE;
+ }
+ 
++#if HAVE_JACK_SESSION 
++
++static gboolean
++jack_session_cb (gpointer data)
++{
++  ui_t * ui = (ui_t*)data;
++  char cmd_buf[256];
++  char fname_buf[256];
++
++  snprintf( fname_buf, sizeof(fname_buf), "%srack.xml", ui->js_event->session_dir);
++  snprintf( cmd_buf, sizeof(cmd_buf), "jack-rack --jack-session-uuid %s \"${SESSION_DIR}rack.xml\"", ui->js_event->client_uuid );
++
++  ui->js_event->command_line = strdup( cmd_buf );
++
++  if (!ui_save_file (ui, fname_buf))
++    ui->js_event->flags = JackSessionSaveError;
++
++  jack_session_reply( ui->procinfo->jack_client, ui->js_event );
++
++  if (ui->js_event->type == JackSessionSaveAndQuit)
++    quit_cb (NULL, ui);
++
++  jack_session_event_free( ui->js_event );
++
++  return FALSE;
++}
++
++void 
++jack_session_cb_aux (jack_session_event_t *ev, void *data)
++{
++  ui_t * ui = (ui_t*)data;
++  ui->js_event = ev;
++  g_idle_add (jack_session_cb, data);
++}
++
++#endif
++
+diff --git a/src/ui_callbacks.h b/src/ui_callbacks.h
+index 6865ae4..17515ad 100644
+--- a/src/ui_callbacks.h
++++ b/src/ui_callbacks.h
+@@ -25,6 +25,11 @@
+ 
+ #include <gtk/gtk.h>
+ 
++#include <jack/jack.h>
++#ifdef HAVE_JACK_SESSION
++#include <jack/session.h>
++#endif
++
+ void     add_cb            (GtkMenuItem * menuitem, gpointer user_data);
+ void     channel_cb        (GtkWidget * button, gpointer user_data);
+ void     new_cb            (GtkWidget * button, gpointer user_data);
+@@ -55,5 +60,8 @@ void plugin_add_button_cb (GtkWidget *widget, gpointer user_data);
+ gboolean idle_cb (gpointer data);
+ 
+ void jack_shutdown_cb (void * data);
++#ifdef HAVE_JACK_SESSION
++void jack_session_cb_aux (jack_session_event_t *ev, void *data);
++#endif
+ 
+ #endif /* __JR_UI_CALLBACKS_H__ */

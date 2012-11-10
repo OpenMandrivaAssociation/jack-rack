@@ -1,0 +1,30 @@
+diff -p -up jack-rack-1.4.7/src/Makefile.am.undeprec jack-rack-1.4.7/src/Makefile.am
+--- jack-rack-1.4.7/src/Makefile.am.undeprec	2009-12-05 03:57:50.000000000 +0100
++++ jack-rack-1.4.7/src/Makefile.am	2009-12-05 04:01:19.000000000 +0100
+@@ -55,10 +55,8 @@ jack_rack_CFLAGS = \
+ 	-DPIXMAPDIR=\"$(pixmapdir)\" \
+ 	-DDTDDIR=\"$(dtddir)\" \
+ 	-DG_DISABLE_DEPRECATED=1 \
+-	-DGTK_DISABLE_DEPRECATED=1 \
+ 	-DGDK_DISABLE_DEPRECATED=1 \
+-	-DGDK_PIXBUF_DISABLE_DEPRECATED=1 \
+-	-DGNOME_DISABLE_DEPRECATED=1
++	-DGDK_PIXBUF_DISABLE_DEPRECATED=1
+ 
+ 
+ jack_rack_LDFLAGS = \
+diff -p -up jack-rack-1.4.7/src/Makefile.in.undeprec jack-rack-1.4.7/src/Makefile.in
+--- jack-rack-1.4.7/src/Makefile.in.undeprec	2009-12-05 03:57:41.000000000 +0100
++++ jack-rack-1.4.7/src/Makefile.in	2009-12-05 04:00:29.000000000 +0100
+@@ -263,10 +263,8 @@ jack_rack_CFLAGS = \
+ 	-DPIXMAPDIR=\"$(pixmapdir)\" \
+ 	-DDTDDIR=\"$(dtddir)\" \
+ 	-DG_DISABLE_DEPRECATED=1 \
+-	-DGTK_DISABLE_DEPRECATED=1 \
+ 	-DGDK_DISABLE_DEPRECATED=1 \
+-	-DGDK_PIXBUF_DISABLE_DEPRECATED=1 \
+-	-DGNOME_DISABLE_DEPRECATED=1
++	-DGDK_PIXBUF_DISABLE_DEPRECATED=1
+ 
+ jack_rack_LDFLAGS = \
+ 	$(JACK_LIBS) \
