@@ -1,7 +1,7 @@
 Name:		jack-rack
 Summary:		LADSPA effects rack for JACK
 Version:		1.4.7
-Release:		11
+Release:		12
 URL:		http://jack-rack.sourceforge.net/
 License:		GPLv2+
 Group:		Sound
