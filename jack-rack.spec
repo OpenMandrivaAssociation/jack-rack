@@ -8,6 +8,11 @@ Group:		Sound
 Source0:		http://prdownloads.sourceforge.net/jack-rack/%{name}-%{version}.tar.bz2
 Patch0:		jack-rack-1.4.7-undeprec.patch
 Patch1:		jack-rack-1.4.7-jacksession.patch
+BuildRequires:	autoconf
+BuildRequires:	automake
+BuildRequires:	libtool-base
+BuildRequires:	slibtool
+BuildRequires:	make
 BuildRequires:	ladspa-devel
 BuildRequires:	pkgconfig
 BuildRequires:	jackit-devel
